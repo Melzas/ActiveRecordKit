@@ -46,6 +46,7 @@
 	
 	fetchRequest.returnsObjectsAsFaults = NO;
 	fetchRequest.includesSubentities = YES;
+	fetchRequest.includesPendingChanges = YES;
 	
 	// Set fetch sort descriptors and predicate
     fetchRequest.sortDescriptors = sortDescriptorsArray;
