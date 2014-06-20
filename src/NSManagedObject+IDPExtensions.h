@@ -14,6 +14,12 @@
 								  predicate:(NSPredicate *)predicate 
 							  prefetchPaths:(NSArray *)prefetchPathes; 
 	 
+// don't call this method in a loop
+// if you need more than one object, use fetchOrCreateObjectsUsingKey:values:
++ (id)fetchOrCreateObjectUsingKey:(NSString *)key value:(id)value;
+
+// |values| must respond to compare: selector
++ (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key values:(id)values;
 
 + (id)managedObject;
 

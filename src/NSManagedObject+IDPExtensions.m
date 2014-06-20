@@ -38,6 +38,52 @@
 								 prefetchPaths:prefetchPathes];
 }
 
++ (id)fetchOrCreateObjectUsingKey:(NSString *)key value:(id)value {
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(%@ = %@)", key, value];
+	NSArray *fetchedObjects = [[self class] fetchEntityWithSortDescriptors:nil
+																 predicate:predicate
+															 prefetchPaths:nil];
+	
+	id object = nil;
+	if (0 == [fetchedObjects count]) {
+		object = [[self class] managedObject];
+		[object setValue:value forKey:key];
+	} else {
+		object = [fetchedObjects firstObject];
+	}
+	
+	return object;
+}
+
++ (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key values:(id)values {
+	NSArray *sortedValues = [values sortedArrayUsingSelector:@selector(compare:)];
+	
+	NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:key ascending:YES];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN %@", key, sortedValues];
+	
+	NSArray *fetchedObjects = [[self class] fetchEntityWithSortDescriptors:@[descriptor]
+																 predicate:predicate
+															 prefetchPaths:nil];
+	
+	NSMutableArray *objects = [NSMutableArray array];
+	
+	NSUInteger currentIndex = 0;
+	for (id object in fetchedObjects) {
+		NSString *currentValue = sortedValues[currentIndex];
+		
+		if (![object[key] isEqual:currentValue]) {
+			id newObject = [[self class] managedObject];
+			[newObject setValue:currentValue forKey:key];
+			[objects addObject:newObject];
+		} else {
+			++currentIndex;
+			[objects addObject:object];
+		}
+	}
+	
+	return objects;
+}
+
 + (id)managedObject {
 	return [NSManagedObjectContext managedObjectWithEntity:NSStringFromClass([self class])];
 }
