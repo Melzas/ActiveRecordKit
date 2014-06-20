@@ -15,14 +15,20 @@
 
 + (NSArray *)fetchEntityWithSortDescriptors:(NSArray *)sortDescriptorsArray 
 								  predicate:(NSPredicate *)predicate 
-							  prefetchPaths:(NSArray *)prefetchPathes; 
+							  prefetchPaths:(NSArray *)prefetchPaths; 
 	 
-// don't call this method in a loop
+// don't call this methods in a loop
 // if you need more than one object, use fetchOrCreateObjectsUsingKey:values:
 + (id)fetchOrCreateObjectUsingKey:(NSString *)key value:(id)value;
++ (id)fetchOrCreateObjectUsingKey:(NSString *)key
+							value:(id)value
+					prefetchPaths:(NSArray *)prefetchPaths;
 
 // |values| must respond to compare: selector
 + (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key values:(id)values;
++ (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key
+								   values:(id)values
+							prefetchPaths:(NSArray *)prefetchPaths;
 
 + (id)managedObject;
 

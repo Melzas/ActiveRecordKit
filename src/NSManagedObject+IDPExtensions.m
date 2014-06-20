@@ -40,19 +40,26 @@
 
 + (NSArray *)fetchEntityWithSortDescriptors:(NSArray *)sortDescriptorsArray 
 								  predicate:(NSPredicate *)predicate 
-							  prefetchPaths:(NSArray *)prefetchPathes
+							  prefetchPaths:(NSArray *)prefetchPaths
 {
 	return [NSManagedObjectContext fetchEntity:NSStringFromClass([self class]) 
 						   withSortDescriptors:sortDescriptorsArray 
 									 predicate:predicate 
-								 prefetchPaths:prefetchPathes];
+								 prefetchPaths:prefetchPaths];
 }
 
 + (id)fetchOrCreateObjectUsingKey:(NSString *)key value:(id)value {
+	return [self fetchOrCreateObjectUsingKey:key value:value prefetchPaths:nil];
+}
+
++ (id)fetchOrCreateObjectUsingKey:(NSString *)key
+							value:(id)value
+					prefetchPaths:(NSArray *)prefetchPaths
+{
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(%@ = %@)", key, value];
 	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:nil
 														 predicate:predicate
-													 prefetchPaths:nil];
+													 prefetchPaths:prefetchPaths];
 	
 	id object = nil;
 	if (0 == [fetchedObjects count]) {
@@ -66,6 +73,13 @@
 }
 
 + (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key values:(id)values {
+	return [self fetchOrCreateObjectsUsingKey:key values:values prefetchPaths:nil];
+}
+
++ (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key
+								   values:(id)values
+							prefetchPaths:(NSArray *)prefetchPaths
+{
 	NSArray *sortedValues = [values sortedArrayUsingSelector:@selector(compare:)];
 	
 	NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:key ascending:YES];
@@ -73,7 +87,7 @@
 	
 	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:@[descriptor]
 														 predicate:predicate
-													 prefetchPaths:nil];
+													 prefetchPaths:prefetchPaths];
 	
 	NSMutableArray *objects = [NSMutableArray array];
 	if (0 == [fetchedObjects count]) {
