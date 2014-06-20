@@ -8,7 +8,7 @@
 
 #import <CoreData/CoreData.h>
 
-#define TXManagedPropertyName(getter) \
+#define IDPManagedPropertyName(getter) \
 	NSStringFromSelector(@selector(getter))
 
 @interface NSManagedObject (IDPExtensions)

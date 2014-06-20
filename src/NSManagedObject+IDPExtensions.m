@@ -12,17 +12,27 @@
 
 #import "NSManagedObjectContext+IDPExtensions.h"
 
-@interface NSManagedObject (RSLAdditionsPrivate)
+@interface NSManagedObject (IDPExtensionsPrivate)
+
 + (NSManagedObjectContext *)context;
++ (id)createObjectWithValue:(id)value forKey:(id)key;
+
 @end
 
-@implementation NSManagedObject (RSLAdditions)
+@implementation NSManagedObject (IDPExtensions)
 
 #pragma mark -
 #pragma mark Private
 
 + (NSManagedObjectContext *)context {
 	return [[IDPCoreDataManager sharedManager] managedObjectContext];
+}
+
++ (id)createObjectWithValue:(id)value forKey:(id)key {
+	id object = [self managedObject];
+	[object setValue:value forKey:key];
+	
+	return object;
 }
 
 #pragma mark -
@@ -40,13 +50,13 @@
 
 + (id)fetchOrCreateObjectUsingKey:(NSString *)key value:(id)value {
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(%@ = %@)", key, value];
-	NSArray *fetchedObjects = [[self class] fetchEntityWithSortDescriptors:nil
-																 predicate:predicate
-															 prefetchPaths:nil];
+	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:nil
+														 predicate:predicate
+													 prefetchPaths:nil];
 	
 	id object = nil;
 	if (0 == [fetchedObjects count]) {
-		object = [[self class] managedObject];
+		object = [self managedObject];
 		[object setValue:value forKey:key];
 	} else {
 		object = [fetchedObjects firstObject];
@@ -61,23 +71,28 @@
 	NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:key ascending:YES];
 	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN %@", key, sortedValues];
 	
-	NSArray *fetchedObjects = [[self class] fetchEntityWithSortDescriptors:@[descriptor]
-																 predicate:predicate
-															 prefetchPaths:nil];
+	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:@[descriptor]
+														 predicate:predicate
+													 prefetchPaths:nil];
 	
 	NSMutableArray *objects = [NSMutableArray array];
+	if (0 == [fetchedObjects count]) {
+		for (id value in sortedValues) {
+			[objects addObject:[self createObjectWithValue:value forKey:key]];
+		}
+		
+		return objects;
+	}
 	
 	NSUInteger currentIndex = 0;
-	for (id object in fetchedObjects) {
-		NSString *currentValue = sortedValues[currentIndex];
+	for (id value in sortedValues) {
+		id currentObject = fetchedObjects[currentIndex];
 		
-		if (![object[key] isEqual:currentValue]) {
-			id newObject = [[self class] managedObject];
-			[newObject setValue:currentValue forKey:key];
-			[objects addObject:newObject];
+		if (![value isEqual:currentObject[key]]) {
+			[objects addObject:[self createObjectWithValue:value forKey:key]];
 		} else {
 			++currentIndex;
-			[objects addObject:object];
+			[objects addObject:currentObject];
 		}
 	}
 	
