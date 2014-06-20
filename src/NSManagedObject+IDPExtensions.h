@@ -8,6 +8,9 @@
 
 #import <CoreData/CoreData.h>
 
+#define TXManagedPropertyName(getter) \
+	NSStringFromSelector(@selector(getter))
+
 @interface NSManagedObject (IDPExtensions)
 
 + (NSArray *)fetchEntityWithSortDescriptors:(NSArray *)sortDescriptorsArray 
