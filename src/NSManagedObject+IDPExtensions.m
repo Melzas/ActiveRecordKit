@@ -56,7 +56,7 @@
 							value:(id)value
 					prefetchPaths:(NSArray *)prefetchPaths
 {
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(%@ = %@)", key, value];
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"(%K = %@)", key, value];
 	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:nil
 														 predicate:predicate
 													 prefetchPaths:prefetchPaths];
@@ -83,26 +83,25 @@
 	NSArray *sortedValues = [values sortedArrayUsingSelector:@selector(compare:)];
 	
 	NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:key ascending:YES];
-	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%@ IN %@", key, sortedValues];
-	
+	NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K IN %@", key, sortedValues];
+
 	NSArray *fetchedObjects = [self fetchEntityWithSortDescriptors:@[descriptor]
 														 predicate:predicate
 													 prefetchPaths:prefetchPaths];
 	
 	NSMutableArray *objects = [NSMutableArray array];
-	if (0 == [fetchedObjects count]) {
-		for (id value in sortedValues) {
+	NSUInteger currentIndex = 0;
+	NSUInteger fetchedObjectsCount = [fetchedObjects count];
+	
+	for (id value in sortedValues) {
+		if (currentIndex >= fetchedObjectsCount) {
 			[objects addObject:[self createObjectWithValue:value forKey:key]];
+			continue;
 		}
 		
-		return objects;
-	}
-	
-	NSUInteger currentIndex = 0;
-	for (id value in sortedValues) {
 		id currentObject = fetchedObjects[currentIndex];
 		
-		if (![value isEqual:currentObject[key]]) {
+		if (![value isEqual:[currentObject valueForKey:key]]) {
 			[objects addObject:[self createObjectWithValue:value forKey:key]];
 		} else {
 			++currentIndex;
