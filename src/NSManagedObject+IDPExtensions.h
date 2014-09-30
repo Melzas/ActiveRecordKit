@@ -27,7 +27,7 @@
 // |values| must respond to compare: selector
 + (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key values:(id)values;
 + (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key
-								   values:(id)values
+								   values:(NSArray *)values
 							prefetchPaths:(NSArray *)prefetchPaths;
 
 + (id)managedObject;

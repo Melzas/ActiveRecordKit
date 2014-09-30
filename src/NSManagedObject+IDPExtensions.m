@@ -77,7 +77,7 @@
 }
 
 + (NSArray *)fetchOrCreateObjectsUsingKey:(NSString *)key
-								   values:(id)values
+								   values:(NSArray *)values
 							prefetchPaths:(NSArray *)prefetchPaths
 {
 	NSArray *sortedValues = [values sortedArrayUsingSelector:@selector(compare:)];
@@ -89,27 +89,32 @@
 														 predicate:predicate
 													 prefetchPaths:prefetchPaths];
 	
-	NSMutableArray *objects = [NSMutableArray array];
+	NSMutableDictionary *objects = [NSMutableDictionary dictionaryWithCapacity:[values count]];
 	NSUInteger currentIndex = 0;
 	NSUInteger fetchedObjectsCount = [fetchedObjects count];
 	
 	for (id value in sortedValues) {
 		if (currentIndex >= fetchedObjectsCount) {
-			[objects addObject:[self createObjectWithValue:value forKey:key]];
+			objects[value] = [self createObjectWithValue:value forKey:key];
 			continue;
 		}
 		
 		id currentObject = fetchedObjects[currentIndex];
 		
 		if (![value isEqual:[currentObject valueForKey:key]]) {
-			[objects addObject:[self createObjectWithValue:value forKey:key]];
+			objects[value] = [self createObjectWithValue:value forKey:key];
 		} else {
 			++currentIndex;
-			[objects addObject:currentObject];
+			objects[value] = currentObject;
 		}
 	}
 	
-	return objects;
+	NSMutableArray *result = [NSMutableArray arrayWithCapacity:[objects count]];
+	for (id initialValue in values) {
+		[result addObject:objects[initialValue]];
+	}
+	
+	return result;
 }
 
 + (id)managedObject {
